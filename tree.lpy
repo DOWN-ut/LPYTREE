@@ -1,0 +1,29 @@
+from random import random 
+
+MAX_AGE= 10
+MAX_LENGTH = 10
+LEAF_AGE = 8
+dr = 0.03 # constants
+magic_number = 200
+width = 40
+
+module Apex(age), Internode(length,radius), Leaf(length,radius)
+
+Axiom: @Gc Apex(0)
+
+derivation length: MAX_LENGTH
+
+production:
+Apex(age) :
+  if age > LEAF_AGE:
+    produce Leaf(1 + random() ,dr)
+  else:
+    produce Internode(1 + random() ,dr) / (magic_number)[+(width)Apex(age+1)]Apex(age+1)
+    
+
+Internode(l,r) --> Internode(l,r+dr)
+
+interpretation:
+Internode(l,r) --> _(r) SetColor(1) F(l)
+Leaf(l,r) --> _(r) SetColor(2) F()
+endlsystem
