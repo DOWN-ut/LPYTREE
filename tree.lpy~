@@ -8,12 +8,12 @@ MAIN_LOG_ANGLE = 5
 MAIN_LOG_STRAIGTHNESS = 0.6
 
 branching = 0.2
-BRANCHING_ANGLE = (15,35)
+BRANCHING_ANGLE = (5,20)
 
 dt = 0.01
 MAX_TIME = 1/dt
 
-Axiom: @Gc A_LOG(0,0,1,0,0)
+Axiom: @Gc A_LOG(0,0,2,0,0)
 
 derivation length: MAX_TIME
 
@@ -28,9 +28,9 @@ A_LOG(loging,age,branch,angle,acc_angle):
 		nproduce A_LOG(0,age,branch,a,a+angle)
 		
 	elif branch > 0 and random() <= branching:
-	  nproduce A_LOG(loging,age,branch,angle,acc_angle)
+	  nproduce A_LOG(branch,age,angle,acc_angle)
 	  a = uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
-	  nproduce [^(a) SetColor(2) A_LOG(0,age,branch-1,angle,acc_angle)]
+	  nproduce [+(a) A_LOG(0,age,branch-1,angle,acc_angle)]
 
 LOG(age,angle) --> LOG(age+1,angle)
 A_LOG(loging,age,branch,angle,acc_angle) --> A_LOG(loging+1,age+1,branch,angle,acc_angle)
