@@ -7,43 +7,45 @@ MAIN_LOG_STEPS = 50
 MAIN_LOG_ANGLE = 5
 MAIN_LOG_STRAIGTHNESS = 0.6
 
-branching = 0.2
-BRANCHING_ANGLE = (15,35)
+branching = 0.15
+BRANCHING_ANGLE = (15,45)
+BRANCHING_SIZE = 0.6
 
 dt = 0.01
 MAX_TIME = 1/dt
 
-Axiom: @Gc A_LOG(0,0,1,0,0)
+Axiom: @Gc A_LOG(0,0,2,0,0,1)
 
 derivation length: MAX_TIME
 
 production:
 
-A_LOG(loging,age,branch,angle,acc_angle):
+A_LOG(loging,age,branch,angle,acc_angle,size):
   
 	if loging >= (MAX_TIME/MAIN_LOG_STEPS):
-		nproduce LOG(age,angle) 
+		nproduce LOG(age,angle,size) 
 		d = acc_angle * MAIN_LOG_STRAIGTHNESS
 		a = angle + uniform(-MAIN_LOG_ANGLE-d,MAIN_LOG_ANGLE-d)
-		nproduce A_LOG(0,age,branch,a,a+angle)
+		nproduce A_LOG(0,age,branch,a,a+angle,size)
 		
 	elif branch > 0 and random() <= branching:
-	  nproduce A_LOG(loging,age,branch,angle,acc_angle)
-	  a = uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
-	  nproduce [^(a) SetColor(2) A_LOG(0,age,branch-1,angle,acc_angle)]
+	  nproduce A_LOG(loging,age,branch,angle,acc_angle,size)
+	  a = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
+	  b = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
+	  nproduce [^(a) +(b) A_LOG(0,age,branch-1,angle,acc_angle,size*BRANCHING_SIZE)]
 
-LOG(age,angle) --> LOG(age+1,angle)
-A_LOG(loging,age,branch,angle,acc_angle) --> A_LOG(loging+1,age+1,branch,angle,acc_angle)
+LOG(age,angle,size) --> LOG(age+1,angle,size)
+A_LOG(loging,age,branch,angle,acc_angle,size) --> A_LOG(loging+1,age+1,branch,angle,acc_angle,size)
 
 interpretation:
-A_LOG(t,age,branch,angle,acc_angle) --> LOG(age,angle)
-LOG(age,angle):
+A_LOG(t,age,branch,angle,acc_angle,size) --> LOG(age,angle,size)
+LOG(age,angle,size):
   age = age / MAX_TIME
-  width = MAIN_LOG_WIDTH[0] + (age * (MAIN_LOG_WIDTH[1] - MAIN_LOG_WIDTH[0]))
+  w = MAIN_LOG_WIDTH[0] + (age * (MAIN_LOG_WIDTH[1] - MAIN_LOG_WIDTH[0]))
   length = age * (MAIN_LOG_LENGTH / MAIN_LOG_STEPS)
-  nproduce _(width) 
+  nproduce _(size*w) 
   nproduce SetColor(MAIN_LOG_COLOR) 
-  nproduce +(angle) F(length)
+  nproduce +(angle) F(length*size)
   
 endlsystem
 ###### INITIALISATION ######
