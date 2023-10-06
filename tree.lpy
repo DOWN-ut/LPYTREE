@@ -1,8 +1,10 @@
+
 from random import * 
+MAIN_LOG_COLOR = 7
+MAIN_LEAF_COLOR = 2
 
 MAIN_LOG_LENGTH = 20
 MAIN_LOG_WIDTH = (0.01,0.5)
-MAIN_LOG_COLOR = 7
 MAIN_LOG_STEPS = 50
 MAIN_LOG_ANGLE = 5
 MAIN_LOG_STRAIGTHNESS = 0.6
@@ -10,6 +12,10 @@ MAIN_LOG_STRAIGTHNESS = 0.6
 branching = 0.15
 BRANCHING_ANGLE = (15,45)
 BRANCHING_SIZE = 0.6
+
+LEAF_AGE = 0.9
+LEAF_SIZE = (0.1,1)
+LEAF_BRANCHING = 0.1
 
 dt = 0.01
 MAX_TIME = 1/dt
@@ -21,24 +27,32 @@ derivation length: MAX_TIME
 production:
 
 A_LOG(loging,age,branch,angle,acc_angle,size):
-  
 	if loging >= (MAX_TIME/MAIN_LOG_STEPS):
 		nproduce LOG(age,angle,size) 
 		d = acc_angle * MAIN_LOG_STRAIGTHNESS
 		a = angle + uniform(-MAIN_LOG_ANGLE-d,MAIN_LOG_ANGLE-d)
-		nproduce A_LOG(0,age,branch,a,a+angle,size)
-		
+		nproduce A_LOG(0,age+1,branch,a,a+angle,size)			
 	elif branch > 0 and random() <= branching:
-	  nproduce A_LOG(loging,age,branch,angle,acc_angle,size)
-	  a = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
-	  b = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
-	  nproduce [^(a) +(b) A_LOG(0,age,branch-1,angle,acc_angle,size*BRANCHING_SIZE)]
+		nproduce A_LOG(loging,age,branch,angle,acc_angle,size)
+		a = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
+		b = choice([-1,1]) * uniform(BRANCHING_ANGLE[0],BRANCHING_ANGLE[1])
+		nproduce [^(a) +(b) A_LOG(0,age+1,branch-1,angle,acc_angle,size*BRANCHING_SIZE)]
 
+
+A_LOG(loging,age,branch,angle,acc_angle,size):
+	age_ratio = age / MAX_TIME
+	if age_ratio >= LEAF_AGE:  
+		nproduce LEAF(age)
+	  
 LOG(age,angle,size) --> LOG(age+1,angle,size)
 A_LOG(loging,age,branch,angle,acc_angle,size) --> A_LOG(loging+1,age+1,branch,angle,acc_angle,size)
 
+LEAF(age):
+    nproduce LEAF(age+1)
+
 interpretation:
 A_LOG(t,age,branch,angle,acc_angle,size) --> LOG(age,angle,size)
+
 LOG(age,angle,size):
   age = age / MAX_TIME
   w = MAIN_LOG_WIDTH[0] + (age * (MAIN_LOG_WIDTH[1] - MAIN_LOG_WIDTH[0]))
@@ -47,6 +61,13 @@ LOG(age,angle,size):
   nproduce SetColor(MAIN_LOG_COLOR) 
   nproduce +(angle) F(length*size)
   
+LEAF(age):
+	age = age / MAX_TIME
+	age -= LEAF_AGE
+	age /= (1-LEAF_AGE)
+	size = LEAF_SIZE[0] + ((LEAF_SIZE[1] - LEAF_SIZE[0]) * age)
+	nproduce SetColor(MAIN_LEAF_COLOR) 
+	nproduce  @O(size)
 endlsystem
 ###### INITIALISATION ######
 
